@@ -1,0 +1,69 @@
+For each movie display its _id, release_year and ratings. Output field should containt three columns:
+_id, release_year, stars(renaming 'ratings'):
+
+db.Movies.aggregate([
+	{ $project: {
+		release_year: 1,  // Output
+		stars: "$ratings"  // output, change the name from "ratings" -> "stars"
+	}}
+]);
+
+For each director, display his/her names and number of movies he/she directed. Output field should
+contain two columns: _id, total:
+
+db.Movies.aggregate([
+	{
+		$group : {_id : "$director", total: { $sum : 1 }}
+	}
+]);
+
+For each country, display its name and number of movies, average ratings and highest ratings. 
+Output fields should contain four columns: _id, nbMovies, avgScore, maxScore
+
+db.Movies.aggregate([
+	{ $group: {
+		_id: "$country",
+		nbMovies: { $sum : 1 },
+		avgScore: { $avg : "$ratings" },
+		maxScore: { $max : "$ratings" }
+	}}
+]);
+
+For each director, display his/her names and number of movies he/she directed.
+Output field should contain two columns: directorName, nbMovies
+
+db.Movies.aggregate([
+	{ $group: {
+		_id: "$director",
+		nbMovies: { $sum : 1 } } },
+	{ $project : {
+		_id: 0, directorName : "$_id", //Rename _id -> directorName
+		nbMovies: 1 }}
+]);
+
+For each country, display its name and number of actors whose id is greater than 34
+Output field should contain two columns: _id, total
+
+db.Actors.aggregate([
+	{ $match: {
+		{ actor_id : { $gt : 34 }}},
+	{ $group: {
+		_id: "$birth_country", total: { $sum : 1 }
+	}}
+]);
+  
+Find out number of movies released each year and output the result in descending order.
+
+db.Movies.aggregate([
+	{ $group: { _id : "$release_year", total : { $sum : 1 }}},
+	{ $sort: { total : -1 } }  // 1->ascending, -1->descending
+]);
+
+Find out number of movies each actor acted in. 
+Output field should contain two columns: _id(actor_id), nbMovies
+
+db.Movies.aggregate([
+	{ $unwind : "$actors" },
+	{ $group : { _id: "$actors", nbMovies: { $sum : 1 }}}
+]);
+
